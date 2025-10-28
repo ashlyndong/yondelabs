@@ -69,15 +69,22 @@ function initNavigation() {
         lastScroll = currentScroll;
     });
 
-    // Smooth scroll for navigation links
+    // Smooth scroll for navigation links with offset
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
+            const targetId = this.getAttribute('href');
+            const target = document.querySelector(targetId);
             if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
+                const navbarHeight = document.querySelector('.navbar').offsetHeight;
+                const bannerHeight = document.querySelector('.announcement-banner').classList.contains('hidden') ? 0 : 50;
+                const offset = navbarHeight + bannerHeight + 20; // Extra 20px padding
+
+                const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
                 });
             }
         });
@@ -160,6 +167,7 @@ function initCarousel() {
 // Modal functionality
 function initModal() {
     const modal = document.getElementById('applicationModal');
+    const wechatModal = document.getElementById('wechatModal');
     const closeBtn = document.querySelector('.close');
 
     if (closeBtn) {
@@ -168,9 +176,13 @@ function initModal() {
         });
     }
 
+    // Close modals when clicking outside
     window.addEventListener('click', (event) => {
         if (event.target === modal) {
             modal.style.display = 'none';
+        }
+        if (event.target === wechatModal) {
+            wechatModal.style.display = 'none';
         }
     });
 }
@@ -200,13 +212,24 @@ function downloadBrochure() {
     showNotification('手册下载已开始 / Brochure download started');
 }
 
-// Schedule consultation
+// Schedule consultation - Open WeChat modal
 function scheduleConsultation() {
     // Track consultation request
     trackEvent('Consultation', 'Schedule', 'CTA');
 
-    // You could redirect to Calendly or show a scheduling modal
-    window.open('https://calendly.com/elite-research/consultation', '_blank');
+    // Open WeChat modal
+    const modal = document.getElementById('wechatModal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
+}
+
+// Close WeChat modal
+function closeWechatModal() {
+    const modal = document.getElementById('wechatModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 // Application form handling
