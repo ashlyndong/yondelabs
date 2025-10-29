@@ -152,20 +152,21 @@ button {
 }
 
 /* Language Toggle - Show only selected language */
-/* Applied to both html and body for maximum compatibility */
-html[data-lang="zh"] .lang-en,
-body[data-lang="zh"] .lang-en {
+/* Default: ALWAYS show Chinese, hide English */
+.lang-en {
     display: none !important;
 }
 
-html[data-lang="en"] .lang-zh,
+.lang-zh {
+    display: block !important;
+}
+
+/* Only when body has data-lang="en", show English and hide Chinese */
+body[data-lang="en"] .lang-en {
+    display: block !important;
+}
+
 body[data-lang="en"] .lang-zh {
-    display: none !important;
-}
-
-/* Default state: if no data-lang is set, show Chinese */
-html:not([data-lang]) .lang-en,
-body:not([data-lang]) .lang-en {
     display: none !important;
 }
 
