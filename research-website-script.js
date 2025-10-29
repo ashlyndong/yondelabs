@@ -3,6 +3,20 @@
 // Language switching functionality
 let currentLang = 'zh';
 
+// CRITICAL: Set language immediately on script load to prevent any flash
+// This runs before DOMContentLoaded
+(function() {
+    const savedLang = localStorage.getItem('preferredLanguage') || 'zh';
+    // Set on both html and body for maximum compatibility
+    if (document.documentElement) {
+        document.documentElement.setAttribute('data-lang', savedLang);
+    }
+    if (document.body) {
+        document.body.setAttribute('data-lang', savedLang);
+    }
+    currentLang = savedLang;
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all components
     initAnnouncementBanner();
@@ -100,24 +114,44 @@ function initLanguageSwitch() {
     // Set initial language from localStorage or default to Chinese
     const savedLang = localStorage.getItem('preferredLanguage') || 'zh';
     console.log('Setting initial language to:', savedLang);
-    updateLanguage(savedLang);
 
+    // IMPORTANT: Set body data-lang IMMEDIATELY, before any other operations
+    // This prevents any flash of wrong language content
+    document.body.setAttribute('data-lang', savedLang);
+    currentLang = savedLang;
+
+    // Update button states to match
     langBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            console.log('Language button clicked:', this.dataset.lang);
-            langBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentLang = this.dataset.lang;
-            updateLanguage(currentLang);
+        btn.classList.toggle('active', btn.dataset.lang === savedLang);
+    });
 
-            // Save preference
-            localStorage.setItem('preferredLanguage', currentLang);
+    // Add click listeners
+    langBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Language button clicked:', this.dataset.lang);
+
+            const newLang = this.dataset.lang;
+
+            // Only update if language actually changed
+            if (newLang !== currentLang) {
+                updateLanguage(newLang);
+
+                // Save preference
+                localStorage.setItem('preferredLanguage', newLang);
+            }
         });
     });
 }
 
 function updateLanguage(lang) {
     console.log('updateLanguage called with:', lang);
+
+    // Validate language parameter
+    if (lang !== 'zh' && lang !== 'en') {
+        console.error('Invalid language:', lang, '- defaulting to zh');
+        lang = 'zh';
+    }
 
     // Set the data-lang attribute on the body element
     // This triggers the CSS rules: body[data-lang="zh"] .lang-en { display: none !important; }
@@ -126,7 +160,11 @@ function updateLanguage(lang) {
 
     // Update active button state
     document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.lang === lang);
+        if (btn.dataset.lang === lang) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
     });
 
     // Update current language variable
